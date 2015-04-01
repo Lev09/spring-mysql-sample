@@ -10,32 +10,41 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
+import java.util.Map;
 
 @Controller
 public class UserController {
 
+		private String getWordPressAddress() {
+    	Map<String, String> env = System.getenv();
+      String WordPressIp = env.get("WP_PORT_80_TCP_ADDR");
+      String WordPressPort = env.get("WP_PORT_80_TCP_PORT");
+      
+      return String.format("%s:%s", WordPressIp, WordPressPort);
+    }
+
     private String getLogin(String wordpressCookie) {
         HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.add("Cookie", "wordpressCookie=" + wordpressCookie);
+        requestHeaders.add("Cookie", "wordpress_test_cookie=" + wordpressCookie);
         HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
         
         RestTemplate restTemplate = new RestTemplate();
         
         ResponseEntity<String> responseEntity = restTemplate.exchange(
-                "https://localhost/wp-content/plugins/my-service/my-service.php", 
+                getWordPressAddress(), 
                 HttpMethod.GET, 
                 requestEntity, 
                 String.class);
         
         return responseEntity.getBody();
-    }
+    }    
 
     @Autowired
     private UserDao userDao;
 
     @RequestMapping("/create")
     @ResponseBody 
-    public String create(@CookieValue(value = "wordpressCookie") String wordpressCookie, String email, String name) {
+    public String create(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, String email, String name) {
         String login = getLogin(wordpressCookie);
 
         if (login != null) {
@@ -55,7 +64,7 @@ public class UserController {
 
     @RequestMapping("/delete")
     @ResponseBody 
-    public String delete(@CookieValue(value = "wordpressCookie") String wordpressCookie, long id) {
+    public String delete(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, long id) {
         String login = getLogin(wordpressCookie);
 
         if (login != null) {
@@ -75,7 +84,7 @@ public class UserController {
 
     @RequestMapping("/get-by-email")
     @ResponseBody
-    public String getByEmail(@CookieValue(value = "wordpressCookie") String wordpressCookie, String email) {
+    public String getByEmail(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, String email) {
         String login = getLogin(wordpressCookie);
 
         if (login != null) {            
@@ -96,7 +105,7 @@ public class UserController {
 
     @RequestMapping("/update")
     @ResponseBody
-    public String updateUser(@CookieValue(value = "wordpressCookie") String wordpressCookie, long id, String email, String name) {
+    public String updateUser(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, long id, String email, String name) {
         String login = getLogin(wordpressCookie);
 
         if (login != null) {
