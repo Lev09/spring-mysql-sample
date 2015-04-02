@@ -6,10 +6,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>netgloo</groupId>
-  <artifactId>spring-boot-mysql-springdatajpa-hibernate</artifactId>
+  <artifactId>spring-boot-mysql</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>spring-boot-mysql-springdatajpa-hibernate</name>
+  <name>spring-boot-mysql</name>
   <description>Use Spring Data JPA + Hibernate + MySQL in Spring Boot</description>
 
   <parent>
