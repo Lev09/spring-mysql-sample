@@ -1,16 +1,20 @@
 package netgloo;
 
+import java.util.Map;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
-import java.util.Map;
 
 @Controller
 public class UserController {
@@ -20,12 +24,25 @@ public class UserController {
       String WordPressIp = env.get("WP_PORT_80_TCP_ADDR");
       String WordPressPort = env.get("WP_PORT_80_TCP_PORT");
       
-      return String.format("%s:%s", WordPressIp, WordPressPort);
+      return String.format("http://%s:%s", WordPressIp, WordPressPort);
     }
 
-    private String getLogin(String wordpressCookie) {
+    private Cookie[] getCookies(ServletRequest req) {
+        //HttpServletRequest request = (HttpServletRequest) req;
+        Cookie[] cookies = ((HttpServletRequest) req).getCookies();
+        
+        return cookies;
+    }
+
+    private String getLogin(Cookie[] wordpressCookies) {
         HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.add("Cookie", "wordpress_test_cookie=" + wordpressCookie);
+
+        if (wordpressCookies != null) {
+            for(Cookie c : wordpressCookies) {
+                requestHeaders.add("Cookie", c.getName() + "=" + c.getValue());
+            }
+        }
+
         HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
         
         RestTemplate restTemplate = new RestTemplate();
@@ -44,10 +61,13 @@ public class UserController {
 
     @RequestMapping("/create")
     @ResponseBody 
-    public String create(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, String email, String name) {
-        String login = getLogin(wordpressCookie);
+    public String create(HttpServletRequest request, String email, String name) {
+        String login = getLogin(getCookies(request));
 
         if (login != null) {
+            
+            System.out.println(login);
+            
             try {
                 User user = new User(email, name);
                 userDao.save(user);
@@ -64,8 +84,8 @@ public class UserController {
 
     @RequestMapping("/delete")
     @ResponseBody 
-    public String delete(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, long id) {
-        String login = getLogin(wordpressCookie);
+    public String delete(HttpServletRequest request, long id) {
+    	String login = getLogin(getCookies(request));
 
         if (login != null) {
             try {
@@ -84,8 +104,8 @@ public class UserController {
 
     @RequestMapping("/get-by-email")
     @ResponseBody
-    public String getByEmail(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, String email) {
-        String login = getLogin(wordpressCookie);
+    public String getByEmail(HttpServletRequest request, String email) {
+    	String login = getLogin(getCookies(request));
 
         if (login != null) {            
             String userId;
@@ -105,8 +125,8 @@ public class UserController {
 
     @RequestMapping("/update")
     @ResponseBody
-    public String updateUser(@CookieValue(value = "wordpress_test_cookie") String wordpressCookie, long id, String email, String name) {
-        String login = getLogin(wordpressCookie);
+    public String updateUser(HttpServletRequest request, long id, String email, String name) {
+    	String login = getLogin(getCookies(request));
 
         if (login != null) {
             try {
