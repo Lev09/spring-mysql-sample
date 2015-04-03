@@ -1,10 +1,8 @@
 package netgloo;
 
 import java.util.Map;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -26,22 +24,13 @@ public class UserController {
 	}
 
 	private String getLogin(HttpServletRequest request) {
-		Cookie[] cookies = request.getCookies();
-		
 		HttpHeaders requestHeaders = new HttpHeaders();
 		
-		if (cookies != null) {
-			String cookieString = "";
-			
-			for (Cookie cookie : cookies) {
-				cookieString += cookie.getName() + ":" + cookie.getValue();
-				requestHeaders.add("Cookie", cookieString);
-			}
+		if (request.getHeader("Cookie") != null) {
+			requestHeaders.add("Cookie", request.getHeader("Cookie"));	
 		}
 		
-		
-		HttpEntity<String> requestEntity = new HttpEntity<String>(null,
-				requestHeaders);
+		HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
 
 		RestTemplate restTemplate = new RestTemplate();
 
